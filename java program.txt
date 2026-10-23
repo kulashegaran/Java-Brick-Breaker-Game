@@ -1,0 +1,204 @@
+import java.util.Scanner;
+
+public class Main {
+
+    static int width = 30;
+    static int height = 15;
+
+    static int ballX = 15;
+    static int ballY = 10;
+
+    static int ballDX = 1;
+    static int ballDY = -1;
+
+    static int paddleX = 12;
+    static int paddleWidth = 6;
+
+    static int score = 0;
+    static int lives = 3;
+
+    static int[][] bricks = new int[3][10];
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        // Create bricks
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 10; j++) {
+                bricks[i][j] = 1;
+            }
+        }
+
+        System.out.println("================================");
+        System.out.println("       BRICK BREAKER GAME");
+        System.out.println("================================");
+        System.out.println("Controls:");
+        System.out.println("A = Move Paddle Left");
+        System.out.println("D = Move Paddle Right");
+        System.out.println("S = Continue");
+        System.out.println("Q = Quit");
+        System.out.println();
+
+        boolean gameRunning = true;
+
+        while (gameRunning && lives > 0 && score < 30) {
+
+            displayGame();
+
+            System.out.print("Enter command: ");
+            String input = sc.nextLine().toLowerCase();
+
+            if (input.equals("q")) {
+                System.out.println("Game ended!");
+                break;
+            }
+
+            // Paddle movement
+            if (input.equals("a")) {
+                if (paddleX > 0) {
+                    paddleX--;
+                }
+            }
+
+            if (input.equals("d")) {
+                if (paddleX < width - paddleWidth) {
+                    paddleX++;
+                }
+            }
+
+            // Move ball
+            moveBall();
+        }
+
+        if (score == 30) {
+            System.out.println();
+            System.out.println("********************************");
+            System.out.println("          YOU WIN!");
+            System.out.println("********************************");
+            System.out.println("Final Score: " + score);
+        } 
+        else if (lives == 0) {
+            System.out.println();
+            System.out.println("********************************");
+            System.out.println("        GAME OVER!");
+            System.out.println("********************************");
+            System.out.println("Final Score: " + score);
+        }
+
+        sc.close();
+    }
+
+    // Display game
+    static void displayGame() {
+
+        System.out.println();
+        System.out.println("Score: " + score + "   Lives: " + lives);
+        System.out.println();
+
+        for (int y = 0; y < height; y++) {
+
+            for (int x = 0; x < width; x++) {
+
+                // Ball
+                if (x == ballX && y == ballY) {
+                    System.out.print("O");
+                }
+
+                // Paddle
+                else if (y == height - 1 &&
+                         x >= paddleX &&
+                         x < paddleX + paddleWidth) {
+
+                    System.out.print("=");
+                }
+
+                // Bricks
+                else if (y < 3 &&
+                         x % 3 == 0 &&
+                         bricks[y][x / 3] == 1) {
+
+                    System.out.print("#");
+                }
+
+                else {
+                    System.out.print(" ");
+                }
+            }
+
+            System.out.println();
+        }
+
+        System.out.println();
+    }
+
+    // Ball movement
+    static void moveBall() {
+
+        ballX += ballDX;
+        ballY += ballDY;
+
+        // Left wall
+        if (ballX <= 0) {
+            ballX = 0;
+            ballDX = 1;
+        }
+
+        // Right wall
+        if (ballX >= width - 1) {
+            ballX = width - 1;
+            ballDX = -1;
+        }
+
+        // Top wall
+        if (ballY <= 0) {
+            ballY = 0;
+            ballDY = 1;
+        }
+
+        // Brick collision
+        if (ballY >= 0 && ballY < 3) {
+
+            int brickColumn = ballX / 3;
+
+            if (brickColumn >= 0 && brickColumn < 10) {
+
+                if (bricks[ballY][brickColumn] == 1) {
+
+                    bricks[ballY][brickColumn] = 0;
+
+                    score += 5;
+
+                    ballDY = 1;
+
+                    System.out.println("Brick destroyed!");
+                    System.out.println("Score +5");
+                }
+            }
+        }
+
+        // Paddle collision
+        if (ballY == height - 1 &&
+            ballX >= paddleX &&
+            ballX < paddleX + paddleWidth) {
+
+            ballDY = -1;
+        }
+
+        // Ball falls down
+        if (ballY >= height) {
+
+            lives--;
+
+            System.out.println("Ball missed!");
+            System.out.println("Life lost!");
+
+            // Reset ball
+            ballX = 15;
+            ballY = 10;
+
+            ballDX = 1;
+            ballDY = -1;
+        }
+    }
+}
